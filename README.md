@@ -12,13 +12,54 @@ Simply run
 kurtosis run github.com/kurtosis-tech/rabbitmq-package
 ```
 
-If you want to override the number of nodes:
+Both the management (default: 15672) and AMQP (default: 5672) ports are exposed.  An administrator user "admin" is created with a default password set to "admin".
 
-```
-kurtosis run github.com/kurtosis-tech/rabbitmq-package '{"num_nodes": <required_number_of_nodes>}'
+### Configuration
+
+<details>
+    <summary>Click to see configuration</summary>
+
+You can configure this package using a JSON structure as an argument to the `kurtosis run` function. The full structure that this package accepts is as follows, with default values shown (note that the `//` lines are not valid JSON and should be removed!):
+
+```javascript
+{
+    // The number of nodes
+    "rabbitmq_num_nodes": 3,
+
+    // The image to run
+    "rabbitmq_image": "rabbitmq:3-management",
+
+    // The management interface port number
+    "rabbitmq_management_port": 15672,
+
+    // The AMQP interface port number
+    "rabbitmq_amqp_port": 5672,
+
+    // The administrator user name and password
+    "rabbitmq_admin_user": "admin",
+    "rabbitmq_admin_password": "admin",
+
+    // The virtual host to create
+    "rabbitmq_vhost": "test",
+
+    // Additional environment variables that will be set on the container
+    "rabbitmq_env_vars": {}
+}
 ```
 
-Both the management (15672) and AMQP (5672) ports are exposed.  An administrator user "admin" is created with a default password set to "admin".
+These arguments can either be provided manually:
+
+```bash
+kurtosis run github.com/kurtosis-tech/rabbitmq-package '{"image":"rabbitmq:3-management"}'
+```
+
+or by loading via a file, for instance using the [args.json](args.json) file in this repo:
+
+```bash
+kurtosis run github.com/kurtosis-tech/rabbitmq-package --enclave rabbitmq "$(cat args.json)"
+```
+
+</details>
 
 ### etcd
 
