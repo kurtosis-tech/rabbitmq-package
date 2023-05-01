@@ -50,7 +50,7 @@ You can configure this package using a JSON structure as an argument to the `kur
 These arguments can either be provided manually:
 
 ```bash
-kurtosis run github.com/kurtosis-tech/rabbitmq-package '{"image":"rabbitmq:3-management"}'
+kurtosis run github.com/kurtosis-tech/rabbitmq-package '{"rabbitmq_image":"rabbitmq:3-management"}'
 ```
 
 or by loading via a file, for instance using the [args.json](args.json) file in this repo:
