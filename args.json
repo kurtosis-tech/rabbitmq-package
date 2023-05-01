@@ -1,0 +1,10 @@
+{
+    "rabbitmq_image": "rabbitmq:3-management",
+    "rabbitmq_num_nodes": 3,
+    "rabbitmq_management_port": 15672,
+    "rabbitmq_amqp_port": 5672,
+    "rabbitmq_admin_user": "admin",
+    "rabbitmq_admin_password": "admin",
+    "rabbitmq_vhost": "test",
+    "rabbitmq_env_vars": {}
+}

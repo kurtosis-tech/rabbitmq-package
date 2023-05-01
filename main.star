@@ -1,24 +1,32 @@
 etcd_module = import_module("github.com/kurtosis-tech/etcd-package/main.star")
 
-DEFAULT_NUMBER_OF_NODES = 3
-NUM_NODES_ARG_NAME = "num_nodes"
-RABBITMQ_NODE_PREFIX="rabbitmq-node-"
-RABBITMQ_NODE_IMAGE = "rabbitmq:3.11.13-management"
+NUM_NODES_ARG = "rabbitmq_num_nodes"
+NUM_NODES_ARG_DEFAULT = 3
 
-MANAGEMENT_PORT_ID = "management"
-MANAGEMENT_PORT_NUMBER =  15672
+IMAGE_ARG = "rabbitmq_image"
+IMAGE_ARG_DEFAULT = "rabbitmq:3-management"
+
+MANAGEMENT_PORT_ARG = "rabbitmq_management_port"
+MANAGEMENT_PORT_ARG_DEFAULT = 15672
 MANAGEMENT_PORT_PROTOCOL = "TCP"
-MANAGEMENT_USERNAME = "manager"
-MANAGEMENT_PASSWORD = "manager"
 
-AMQP_PORT_ID = "amqp"
-AMQP_PORT_NUMBER =  5672
+AMQP_PORT_ARG = "rabbitmq_amqp_port"
+AMQP_PORT_ARG_DEFAULT = 5672
 AMQP_PORT_PROTOCOL = "TCP"
 
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "admin"
+ADMIN_USER_ARG = "rabbitmq_admin_user"
+ADMIN_USER_ARG_DEFAULT = "admin"
 
-VHOST = "test"
+ADMIN_PASSWORD_ARG = "rabbitmq_admin_password"
+ADMIN_PASSWORD_ARG_DEFAULT = "admin"
+
+VHOST_ARG = "rabbitmq_vhost"
+VHOST_ARG_DEFAULT = "test"
+
+ENV_VARS_ARG = "rabbitmq_env_vars"
+ENV_VARS_ARG_DEFAULT = {}
+
+RABBITMQ_NODE_PREFIX = "rabbitmq-node-"
 
 FIRST_NODE_INDEX = 0
 
@@ -32,21 +40,26 @@ LIB_DIR = "/var/lib/rabbitmq"
 ERLANG_COOKIE_PATH =  "github.com/kurtosis-tech/rabbitmq-package/static_files/.erlang.cookie"
 
 def run(plan, args):
-    num_nodes = DEFAULT_NUMBER_OF_NODES
-    if NUM_NODES_ARG_NAME in args:
-        num_nodes = args["num_nodes"]
+    num_nodes = args.get(NUM_NODES_ARG, NUM_NODES_ARG_DEFAULT)
+    image = args.get(IMAGE_ARG, IMAGE_ARG_DEFAULT)
+    management_port = args.get(MANAGEMENT_PORT_ARG, MANAGEMENT_PORT_ARG_DEFAULT)
+    amqp_port = args.get(AMQP_PORT_ARG, AMQP_PORT_ARG_DEFAULT)
+    admin_user = args.get(ADMIN_USER_ARG, ADMIN_USER_ARG_DEFAULT)
+    admin_password = args.get(ADMIN_PASSWORD_ARG, ADMIN_PASSWORD_ARG_DEFAULT)
+    vhost = args.get(VHOST_ARG, VHOST_ARG_DEFAULT)
+    env_vars = args.get(ENV_VARS_ARG, ENV_VARS_ARG_DEFAULT)
 
     if num_nodes == 0:
         fail("Need at least 1 node to start the RabbitMQ cluster got 0")
 
-    etcd_run_output = etcd_module.run(plan, ())
+    etcd_run_output = etcd_module.run(plan, args)
 
     config_template_and_data = {
         CONFIG_TEMPLATE_FILENAME : struct(
             template = read_file(CONFIG_TEMPLATE_PATH),
             data = {
-                "ManagementPort": MANAGEMENT_PORT_NUMBER,
-                "AMQPPort": AMQP_PORT_NUMBER,
+                "ManagementPort": management_port,
+                "AMQPPort": amqp_port,
                 "EtcdEndpoint": "{}:{}".format(etcd_run_output["hostname"],  etcd_run_output["port"])
             }
         ),
@@ -66,7 +79,7 @@ def run(plan, args):
     started_nodes = []
     for node in range(0, num_nodes):
         node_name = get_service_name(node)
-        config = get_service_config(node_name, rendered_config_artifact, lib_artifact)
+        config = get_service_config(rendered_config_artifact, lib_artifact, image, management_port, amqp_port, env_vars)
         node = plan.add_service(name = node_name, config = config)
         started_nodes.append(node)
 
@@ -76,10 +89,10 @@ def run(plan, args):
     )
     plan.wait(recipe = check_cluster, field = "output", assertion = "==", target_value = str(num_nodes), timeout = "5m", service_name = get_first_node_name())
 
-    create_vhost_cmd = "rabbitmqctl add_vhost {}".format(VHOST)
+    create_vhost_cmd = "rabbitmqctl add_vhost {}".format(vhost)
     delete_guest_user_cmd = "rabbitmqctl delete_user guest"
     configure_admin_user_cmd = "rabbitmqctl add_user {} {}; rabbitmqctl set_permissions -p {} {} \".*\" \".*\" \".*\"; rabbitmqctl set_user_tags {} administrator".format(
-        ADMIN_USERNAME, ADMIN_PASSWORD, VHOST, ADMIN_USERNAME, ADMIN_USERNAME, ADMIN_PASSWORD)
+        admin_user, admin_password, vhost, admin_user, admin_user, admin_password)
     for cmd in (
         create_vhost_cmd,
         delete_guest_user_cmd,
@@ -93,15 +106,14 @@ def run(plan, args):
     return result
 
 
-def get_service_config(node_name, config_artifact, lib_artifact):
+def get_service_config(config_artifact, lib_artifact, image, management_port, amqp_port, env_vars):
     return ServiceConfig(
-        image = RABBITMQ_NODE_IMAGE,
+        image = image,
         ports = {
-            MANAGEMENT_PORT_ID : PortSpec(number = MANAGEMENT_PORT_NUMBER, transport_protocol = MANAGEMENT_PORT_PROTOCOL),
-            AMQP_PORT_ID : PortSpec(number = AMQP_PORT_NUMBER, transport_protocol = AMQP_PORT_PROTOCOL),
+            "management" : PortSpec(number = management_port, transport_protocol = "TCP"),
+            "amqp" : PortSpec(number = amqp_port, transport_protocol = "TCP"),
         },
-        env_vars = {
-        },
+        env_vars = env_vars,
         files = {
             CONFIG_DIR: config_artifact,
             LIB_DIR: lib_artifact,
