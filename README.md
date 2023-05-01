@@ -14,7 +14,7 @@ kurtosis run github.com/kurtosis-tech/rabbitmq-package
 
 Both the management (default: 15672) and AMQP (default: 5672) ports are exposed.  An administrator user "admin" is created with a default password set to "admin".
 
-### Configuration
+#### Configuration
 
 <details>
     <summary>Click to see configuration</summary>
