@@ -117,7 +117,10 @@ def get_service_config(config_artifact, lib_artifact, image, management_port, am
         files = {
             CONFIG_DIR: config_artifact,
             LIB_DIR: lib_artifact,
-        }
+        },
+        # TODO productize this - we need to set permissions otherwise rabbit mq is unhappy
+        entrypoint = ["/bin/sh", "-c", "chmod 400 {0}/{1} && /usr/local/bin/docker-entrypoint.sh rabbitmq-server".format(LIB_DIR, ".erlang.cookie")],
+        cmd = []
     )
 
 
