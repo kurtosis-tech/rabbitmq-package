@@ -8,8 +8,6 @@ executors:
 jobs:
   run_starlark:
     executor: ubuntu_vm
-    # leaving this here as i sometime test with larger number of nodes
-    resource_class: xlarge
     steps:
 
       # Set up Kurtosis
