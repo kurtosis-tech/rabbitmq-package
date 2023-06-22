@@ -39,6 +39,9 @@ ENABLED_PLUGINS_TEMPLATE_FILENAME = "enabled_plugins"
 LIB_DIR = "/var/lib/rabbitmq"
 ERLANG_COOKIE_PATH =  "github.com/kurtosis-tech/rabbitmq-package/static_files/.erlang.cookie"
 
+BIN_DIR = "/usr/local/bin"
+ENTRYPOINT_SCRIPT_PATH =  "github.com/kurtosis-tech/rabbitmq-package/static_files/entrypoint.sh"
+
 def run(plan, args):
     num_nodes = args.get(NUM_NODES_ARG, NUM_NODES_ARG_DEFAULT)
     image = args.get(IMAGE_ARG, IMAGE_ARG_DEFAULT)
