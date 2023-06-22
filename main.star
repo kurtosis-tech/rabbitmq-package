@@ -37,9 +37,9 @@ ENABLED_PLUGINS_TEMPLATE_PATH =  "github.com/kurtosis-tech/rabbitmq-package/stat
 ENABLED_PLUGINS_TEMPLATE_FILENAME = "enabled_plugins"
 
 LIB_DIR = "/var/lib/rabbitmq"
-ERLANG_COOKIE_PATH =  "github.com/kurtosis-tech/rabbitmq-package/static_files/.erlang.cookie"
-COOKIE_PERMISSIONS = "400"
-COOKIE_FILE_NAME = ".erlang.cookie"
+ERLANG_COOKIE_FILENAME = ".erlang.cookie"
+ERLANG_COOKIE_PATH =  "github.com/kurtosis-tech/rabbitmq-package/static_files/" + ERLANG_COOKIE_FILENAME
+ERLANG_COOKIE_PERMISSIONS = "400"
 
 def run(plan, args):
     num_nodes = args.get(NUM_NODES_ARG, NUM_NODES_ARG_DEFAULT)
