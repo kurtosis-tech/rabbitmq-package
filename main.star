@@ -37,7 +37,9 @@ ENABLED_PLUGINS_TEMPLATE_PATH =  "github.com/kurtosis-tech/rabbitmq-package/stat
 ENABLED_PLUGINS_TEMPLATE_FILENAME = "enabled_plugins"
 
 LIB_DIR = "/var/lib/rabbitmq"
-ERLANG_COOKIE_PATH =  "github.com/kurtosis-tech/rabbitmq-package/static_files/.erlang.cookie"
+ERLANG_COOKIE_FILENAME = ".erlang.cookie"
+ERLANG_COOKIE_PATH =  "github.com/kurtosis-tech/rabbitmq-package/static_files/" + ERLANG_COOKIE_FILENAME
+ERLANG_COOKIE_PERMISSIONS = "400"
 
 BIN_DIR = "/usr/local/bin"
 ENTRYPOINT_SCRIPT_PATH =  "github.com/kurtosis-tech/rabbitmq-package/static_files/entrypoint.sh"
@@ -120,7 +122,9 @@ def get_service_config(config_artifact, lib_artifact, image, management_port, am
         files = {
             CONFIG_DIR: config_artifact,
             LIB_DIR: lib_artifact,
-        }
+        },
+        # TODO productize this - we need to set permissions otherwise rabbit mq is unhappy
+        entrypoint = ["/bin/sh", "-c", "chmod {0} {1}/{2} && /usr/local/bin/docker-entrypoint.sh rabbitmq-server".format(ERLANG_COOKIE_PERMISSIONS, LIB_DIR, ERLANG_COOKIE_FILENAME)],
     )
 
 
