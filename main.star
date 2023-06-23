@@ -37,12 +37,11 @@ ENABLED_PLUGINS_TEMPLATE_PATH =  "github.com/kurtosis-tech/rabbitmq-package/stat
 ENABLED_PLUGINS_TEMPLATE_FILENAME = "enabled_plugins"
 
 LIB_DIR = "/var/lib/rabbitmq"
-ERLANG_COOKIE_FILENAME = ".erlang.cookie"
-ERLANG_COOKIE_PATH =  "github.com/kurtosis-tech/rabbitmq-package/static_files/" + ERLANG_COOKIE_FILENAME
-ERLANG_COOKIE_PERMISSIONS = "400"
+ERLANG_COOKIE_PATH =  "github.com/kurtosis-tech/rabbitmq-package/static_files/.erlang.cookie"
 
-BIN_DIR = "/usr/local/bin"
+BIN_DIR = "/opt/local/bin"
 ENTRYPOINT_SCRIPT_PATH =  "github.com/kurtosis-tech/rabbitmq-package/static_files/entrypoint.sh"
+ENTRYPOINT_SCRIPT_FILENAME = "entrypoint.sh"
 
 def run(plan, args):
     num_nodes = args.get(NUM_NODES_ARG, NUM_NODES_ARG_DEFAULT)
@@ -81,10 +80,15 @@ def run(plan, args):
         name = "lib"
     )
 
+    entrypoint_script_artifact = plan.upload_files(
+        src = ENTRYPOINT_SCRIPT_PATH,
+        name = "entrypoint"
+    )
+
     started_nodes = []
     for node in range(0, num_nodes):
         node_name = get_service_name(node)
-        config = get_service_config(rendered_config_artifact, lib_artifact, image, management_port, amqp_port, env_vars)
+        config = get_service_config(rendered_config_artifact, lib_artifact, entrypoint_script_artifact, image, management_port, amqp_port, env_vars)
         node = plan.add_service(name = node_name, config = config)
         started_nodes.append(node)
 
@@ -111,7 +115,7 @@ def run(plan, args):
     return result
 
 
-def get_service_config(config_artifact, lib_artifact, image, management_port, amqp_port, env_vars):
+def get_service_config(config_artifact, lib_artifact, entrypoint_script_artifact, image, management_port, amqp_port, env_vars):
     return ServiceConfig(
         image = image,
         ports = {
@@ -122,9 +126,9 @@ def get_service_config(config_artifact, lib_artifact, image, management_port, am
         files = {
             CONFIG_DIR: config_artifact,
             LIB_DIR: lib_artifact,
+            BIN_DIR: entrypoint_script_artifact,
         },
-        # TODO productize this - we need to set permissions otherwise rabbit mq is unhappy
-        entrypoint = ["/bin/sh", "-c", "chmod {0} {1}/{2} && /usr/local/bin/docker-entrypoint.sh rabbitmq-server".format(ERLANG_COOKIE_PERMISSIONS, LIB_DIR, ERLANG_COOKIE_FILENAME)],
+        entrypoint = ["/opt/local/bin/{}".format(ENTRYPOINT_SCRIPT_FILENAME)]
     )
 
 
