@@ -31,14 +31,14 @@ RABBITMQ_NODE_PREFIX = "rabbitmq-node-"
 FIRST_NODE_INDEX = 0
 
 CONFIG_DIR = "/etc/rabbitmq"
-CONFIG_TEMPLATE_PATH =  "github.com/kurtosis-tech/rabbitmq-package/static_files/rabbitmq.conf.tmpl"
+CONFIG_TEMPLATE_PATH =  "/static_files/rabbitmq.conf.tmpl"
 CONFIG_TEMPLATE_FILENAME = "rabbitmq.conf"
-ENABLED_PLUGINS_TEMPLATE_PATH =  "github.com/kurtosis-tech/rabbitmq-package/static_files/enabled_plugins.tmpl"
+ENABLED_PLUGINS_TEMPLATE_PATH =  "/static_files/enabled_plugins.tmpl"
 ENABLED_PLUGINS_TEMPLATE_FILENAME = "enabled_plugins"
 
 LIB_DIR = "/var/lib/rabbitmq"
 ERLANG_COOKIE_FILENAME = ".erlang.cookie"
-ERLANG_COOKIE_PATH =  "github.com/kurtosis-tech/rabbitmq-package/static_files/" + ERLANG_COOKIE_FILENAME
+ERLANG_COOKIE_PATH =  "/static_files/" + ERLANG_COOKIE_FILENAME
 ERLANG_COOKIE_PERMISSIONS = "400"
 
 def run(plan, args):
